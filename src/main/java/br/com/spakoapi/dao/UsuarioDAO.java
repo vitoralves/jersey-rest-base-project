@@ -3,6 +3,7 @@ package br.com.spakoapi.dao;
 import br.com.spakoapi.entidade.Usuario;
 import br.com.spakoapi.excecao.DAOException;
 import br.com.spakoapi.excecao.ErrorCode;
+import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.EntityManager;
 
@@ -23,7 +24,7 @@ public class UsuarioDAO {
         return usuarios;
     }
 
-    public Usuario getById(long id) {
+    public List<Usuario> getById(long id) {
 
         if (id <= 0) {
             throw new DAOException("O id deve ser maior que 0", ErrorCode.BAD_REQUEST.getCode());
@@ -41,10 +42,12 @@ public class UsuarioDAO {
         }
 
         if (u == null) {
-            throw new DAOException("Usuário" + id + " não encontrado ", ErrorCode.NOT_FOUND.getCode());
+            throw new DAOException("Usuário " + id + " não encontrado ", ErrorCode.NOT_FOUND.getCode());
         }
 
-        return u;
+        List<Usuario> lista = new ArrayList<>();
+        lista.add(u);
+        return lista;
     }
 
     public void save(Usuario u) {
@@ -70,21 +73,18 @@ public class UsuarioDAO {
 
     public void update(Usuario u) {
         EntityManager em = JPAUtil.getEntityManager();
-        Usuario existente = null;
+        List<Usuario> existente = null;
 
         if (!usuarioValido(u)) {
             throw new DAOException("Usuário inválido! ", ErrorCode.BAD_REQUEST.getCode());
         }
 
-        if (u.getId() <= 0) {
+        if (u.getId() == null) {
             throw new DAOException("Usuário com id inválido! ", ErrorCode.BAD_REQUEST.getCode());
         }
 
+        // se não existir ele retorna uma exceção
         existente = getById(u.getId());
-
-        if (existente == null) {
-            throw new DAOException("Usuário não existe! ", ErrorCode.BAD_REQUEST.getCode());
-        }
 
         try {
             em.getTransaction().begin();
@@ -100,17 +100,16 @@ public class UsuarioDAO {
 
     public void delete(long id) {
         EntityManager em = JPAUtil.getEntityManager();
-        Usuario usuario = null;
+        List<Usuario> usuario = null;
 
+        //se não existir retorna exceção
         usuario = getById(id);
 
-        if (usuario == null) {
-            throw new DAOException("Usuário não existe! ", ErrorCode.BAD_REQUEST.getCode());
-        }
-
+        // quando procura-se o objeto por id o entity manager é fechado e o objeto fica detached, portanto é necessário realizar um merge para ele voltar como reattach
+        Usuario u = em.merge(usuario.get(0));
         try {
             em.getTransaction().begin();
-            em.remove(usuario);
+            em.remove(u);
             em.getTransaction().commit();
         } catch (RuntimeException ex) {
             em.getTransaction().rollback();
@@ -147,8 +146,8 @@ public class UsuarioDAO {
         EntityManager em = JPAUtil.getEntityManager();
 
         try {
-            u = em.createQuery("select u from Usuario u where u.nome like :nome", Usuario.class)
-                    .setParameter("nome", "%" + nome + "%")
+            u = em.createQuery("select u from Usuario u where UPPER(u.nome) like :nome", Usuario.class)
+                    .setParameter("nome", "%" + nome.toUpperCase() + "%")
                     .getResultList();
         } catch (RuntimeException ex) {
             throw new DAOException("Erro ao recuperar usuários por nome " + ex.getMessage(), ErrorCode.SERVER_ERROR.getCode());

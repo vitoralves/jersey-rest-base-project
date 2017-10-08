@@ -19,13 +19,17 @@ public class UsuarioRecurso {
     public List<Usuario> getUsuarios(
             @QueryParam("nome") String nome,
             @QueryParam("offset") int offset,
-            @QueryParam("limit") int limit
+            @QueryParam("limit") int limit,
+            @QueryParam("id") int id
     ) {
         if ((offset > 0) && (limit > 0)) {
             return servico.getUsuariosPaginacao(offset, limit);
         }
         if (nome != null) {
             return servico.getUsuarioPorNome(nome);
+        }
+        if (id > 0) {
+            return servico.getUsuarioPorId(id);
         }
         return servico.getUsuarios();
     }
@@ -38,8 +42,15 @@ public class UsuarioRecurso {
 
     @DELETE
     @Path("{id}")
-    public void delete(@PathParam("id") long id) {
+    public Response delete(@PathParam("id") long id) {
         servico.apagarUsuario(id);
+        return Response.status(Status.OK).build();
+    }
+
+    @PUT
+    public Response update(Usuario u) {
+        servico.alterarUsuario(u);
+        return Response.status(Status.OK).build();
     }
 
 }

@@ -12,7 +12,7 @@ public class UsuarioServico {
         return dao.getAll();
     }
 
-    public Usuario getUsuarioPorId(long id) {
+    public List<Usuario> getUsuarioPorId(long id) {
         return dao.getById(id);
     }
 
