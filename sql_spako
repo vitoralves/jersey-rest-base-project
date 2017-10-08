@@ -1,0 +1,100 @@
+﻿create table usuario(
+id serial,
+nome varchar(60),
+sobrenome varchar(60),
+cpf varchar(14),
+email varchar(60),
+senha varchar(32),
+tipo integer,
+primary key (id))
+
+create table usuario_comum(
+id serial,
+telefone varchar(30),
+celular varchar(30),
+cidade varchar(40),
+bairro varchar(40),
+endereco varchar(60),
+numero varchar(10),
+cep varchar(13),
+usuario int,
+primary key (id),
+foreign key (usuario) references usuario(id))
+
+create table usuario_fornecedor(
+id serial,
+cnpj varchar(20),
+razao varchar(60),
+nome varchar(40),
+telefone varchar(30),
+celular varchar(30),
+atendimento_seg_sex varchar(10),
+atendimento_sabado varchar(10),
+endereco varchar(60),
+bairro varchar(40),
+numero varchar(10),
+cidade varchar(40),
+usuario int,
+cep varchar(13),
+primary key (id),
+foreign key (usuario) references usuario(id))
+
+create table produto(
+id serial,
+nome varchar(60),
+valor numeric(10,2),
+categoria int,
+descricao varchar(500),
+desconto numeric(10,2),
+img1 bytea,
+img2 bytea,
+img3 bytea,
+imge4 bytea,
+qnt int,
+fornecedor int,
+primary key (id),
+foreign key (categoria) references categoria(id),
+foreign key (fornecedor) references usuario_fornecedor(id))
+
+create table categoria(
+id serial,
+nome varchar(30),
+primary key (id))
+
+create table favorito(
+id serial,
+produto int,
+usuario int,
+primary key (id),
+foreign key (produto) references produto(id),
+foreign key (usuario) references usuario(id))
+
+create table subcategoria(
+id serial,
+nome varchar(30),
+categoria int,
+primary key (id),
+foreign key (categoria) references categoria(id))
+
+create table produto_subcategoria(
+id serial,
+subcategoria int,
+produto int,
+primary key (id),
+foreign key (subcategoria) references subcategoria(id),
+foreign key (produto) references produto(id))
+
+create table cidade(
+id serial,
+nome varchar(60),
+estado char(2),
+sigla char(2),
+primary key (id))
+
+create table fornecedor_cidade(
+id serial,
+fornecedor int,
+cidade int,
+primary key (id),
+foreign key (fornecedor) references usuario_fornecedor(id),
+foreign key(cidade) references cidade(id))
